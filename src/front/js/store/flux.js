@@ -16,6 +16,34 @@ const getState = ({ getStore, getActions, setStore }) => {
 			]
 		},
 		actions: {
+
+			login: async(name, password) =>{
+				try{
+					const response = await fetch("https://studious-space-happiness-w4w4x9rj66f549v-3001.app.github.dev/login", 
+						{
+							method: "POST",
+							body: JSON.stringify({
+									"name": name,
+									"password": password
+									
+							}),
+							header: {
+								'Content-Type': 'application/json'
+							}
+						}
+					) 
+					const data = await response.json()
+
+					if (!data.ok){
+						throw new Error('Error en respuesta')
+					}
+					localStorage.setItem(token, data.token);
+				}
+				catch(err){
+					console.error(err)
+				}
+			},
+
 			// Use getActions to call a function within a fuction
 			exampleFunction: () => {
 				getActions().changeColor(0, "green");
