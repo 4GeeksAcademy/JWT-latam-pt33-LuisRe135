@@ -10,6 +10,7 @@ from api.models import db, User
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
+from flask_cors import CORS
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 
 
@@ -19,6 +20,7 @@ ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../public/')
 app = Flask(__name__)
+CORS(app)
 app.url_map.strict_slashes = False
 
 app.config["JWT_SECRET_KEY"] = "secreto-divertido"  
@@ -83,6 +85,7 @@ def create_token():
 def signup():
 
     name = request.json.get("name", None)
+    email = request.json.get("email", None)
     password = request.json.get("password", None)
 
     if not name:
@@ -91,12 +94,12 @@ def signup():
     if not password:
         return jsonify({"msg": "Falta la contraseña"}), 401
 
-    user_exists = User.query.filter_by(name=name).first()
+    user_exists = User.query.filter_by(email=email).first()
     
     if user_exists:
          return jsonify({'error': 'user already exists.'}), 409
     
-    new_user = User(name=name, password=password)
+    new_user = User(name=name, email=email, password=password)
 
     db.session.add(new_user)
     db.session.commit()
@@ -109,13 +112,13 @@ def signup():
 # login endpoint
 @app.route('/login', methods=['POST'])
 def login():
-    name = request.json.get("name", None)
+    email = request.json.get("email", None)
     password = request.json.get("password", None)
 
-    if not name or not password:
+    if not email or not password:
         return jsonify({'error': 'missing fields.'}), 400
     
-    user_exists = User.query.filter_by(name=name).first()
+    user_exists = User.query.filter_by(email=email).first()
     if not user_exists:
        return jsonify({'error': 'user not found.'}), 401
     
